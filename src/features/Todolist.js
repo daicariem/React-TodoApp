@@ -1,12 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./todolist.css";
 
 function Todolist() {
   const [tasks, setTasks] = useState([]);
   const [inputText, setInputText] = useState('');
   const [editText,setEditText] = useState('')
-  const [editIndex,setEditIndex] = useState('')
+  const [editIndex,setEditIndex] = useState(null)
   const [allCompleted, setAllCompleted] = useState(false);
+
+
+  useEffect(() => {
+    const tasksFromLS = localStorage.getItem('tasks')
+
+    if(!tasksFromLS) {
+      return localStorage.setItem('tasks', JSON.stringify([]));
+    }
+  
+    setTasks(JSON.parse(tasksFromLS))
+    // return localStorage.setItem('tasks', JSON.stringify(tasks))
+  }, []);
+
 
 
   function handleAddTask(e) {
@@ -15,13 +28,17 @@ function Todolist() {
 
   function handleSubmitAddTask() {
     if (inputText.trim()) {
-      setTasks([...tasks, { id:tasks.length+1 , text: inputText, completed: false }]);
+      const taskList = [...tasks, { id:tasks.length+1 , text: inputText, completed: false }]
+      localStorage.setItem('tasks', JSON.stringify(taskList))
+      setTasks(taskList);
       setInputText('');
     }
   }
 
   function HandleDelete (id) {
-    setTasks(tasks.filter((task, i) => task.id !== id));
+   const a = tasks.filter((task) => task.id !== id);
+    localStorage.setItem('tasks', JSON.stringify(a))
+    setTasks(a);
   }
 
   function HandleEdit(id) {
@@ -32,6 +49,7 @@ function Todolist() {
   function HandleEditSubmit () {
     const updateTask =  [...tasks]
     updateTask[editIndex].text = editText;
+    localStorage.setItem('tasks', JSON.stringify(updateTask));
     setTasks(updateTask);
     setEditIndex(null);
     setEditText('')
@@ -43,6 +61,7 @@ function Todolist() {
 
   function handleCheckAll() {
     const updatedTasks = tasks.map(task => ({ ...task, completed: !allCompleted }));
+    localStorage.setItem('tasks',JSON.stringify(updatedTasks))
     setTasks(updatedTasks);
     setAllCompleted(!allCompleted)
   }
@@ -50,8 +69,10 @@ function Todolist() {
   function handleChangeonCheck(index) {
     const updatedTasks = [...tasks];
     updatedTasks[index].completed = !updatedTasks[index].completed;
+    localStorage.setItem('tasks',JSON.stringify(updatedTasks))
     setTasks(updatedTasks)
   }
+
 
   
 
@@ -67,7 +88,7 @@ function Todolist() {
         />
         <button onClick={handleSubmitAddTask}>SUBMIT</button>
       </div>
-      {tasks.map((task,index) => (
+      {tasks?.map((task,index) => (
         <div className="task" key={index}>
             {editIndex === index ? (
             <>
